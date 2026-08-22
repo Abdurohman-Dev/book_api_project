@@ -140,8 +140,16 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ),
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_THROTTLE_CLASSES':[
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES':{
+        'anon': '3/minute',
+        'user': '5/minute',
+        
+    }
 }
-
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Book Management API',
     'DESCRIPTION': 'A complete API for managing books',
