@@ -4,11 +4,19 @@ from rest_framework.response import Response
 from .models import Article
 from .serializers import ArticleSerializer
 from rest_framework.permissions import AllowAny
+from rest_framework import filters
+from django_filters.rest_framework import DjangoFilterBackend
 
 class ArticleViewSet(viewsets.ModelViewSet):
     queryset = Article.objects.all()
     serializer_class = ArticleSerializer
     permission_classes = [AllowAny]
+
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+
+    filterset_fields = ['is_approved']
+    search_fields = ['title', 'content']
+    ordering_fields = ['id','title']
 
     @action(detail=True, methods=['post'])
     def approve(self, request, pk=None):
