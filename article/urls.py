@@ -7,4 +7,5 @@ router.register(r'articles', ArticleViewSet, basename='article')
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('api-auth/', include('rest_framework.urls')),
 ]

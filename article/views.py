@@ -6,11 +6,14 @@ from .serializers import ArticleSerializer
 from rest_framework.permissions import AllowAny
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
-
+from .permissions import IsOwnerOrReadOnly
 class ArticleViewSet(viewsets.ModelViewSet):
     queryset = Article.objects.all()
     serializer_class = ArticleSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsOwnerOrReadOnly]
+
+    def perform_create(self, serializer):
+        serializer.save(author= self.request.user)
 
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
 
