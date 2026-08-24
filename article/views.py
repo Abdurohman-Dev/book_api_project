@@ -8,7 +8,7 @@ from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 from .permissions import IsOwnerOrReadOnly
 class ArticleViewSet(viewsets.ModelViewSet):
-    queryset = Article.objects.all()
+    queryset = Article.objects.select_related('author').all()
     serializer_class = ArticleSerializer
     permission_classes = [IsOwnerOrReadOnly]
 
