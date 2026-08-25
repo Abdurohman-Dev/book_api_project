@@ -148,7 +148,9 @@ REST_FRAMEWORK = {
         'anon': '3/minute',
         'user': '10/minute',
         
-    }
+    },
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 2,
 }
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Book Management API',
