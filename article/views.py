@@ -7,10 +7,12 @@ from rest_framework.permissions import AllowAny
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 from .permissions import IsOwnerOrReadOnly
+from .paginations import CustomArticlePagination
 class ArticleViewSet(viewsets.ModelViewSet):
     queryset = Article.objects.select_related('author').all()
     serializer_class = ArticleSerializer
     permission_classes = [IsOwnerOrReadOnly]
+    pagination_class = CustomArticlePagination
 
     def perform_create(self, serializer):
         serializer.save(author= self.request.user)
@@ -33,3 +35,4 @@ class ArticleViewSet(viewsets.ModelViewSet):
         approved = Article.objects.filter(is_approved=True)
         serializer = self.get_serializer(approved, many=True)
         return Response(serializer.data)
+        
