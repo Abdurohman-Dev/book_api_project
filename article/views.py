@@ -8,6 +8,7 @@ from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 from .permissions import IsOwnerOrReadOnly
 from .paginations import CustomArticlePagination
+from rest_framework.filters import SearchFilter, OrderingFilter
 class ArticleViewSet(viewsets.ModelViewSet):
     queryset = Article.objects.select_related('author').all()
     serializer_class = ArticleSerializer
@@ -17,9 +18,9 @@ class ArticleViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author= self.request.user)
 
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [DjangoFilterBackend, SearchFilter , OrderingFilter ]
 
-    filterset_fields = ['is_approved']
+    filterset_fields = ['is_approved', 'author']
     search_fields = ['title', 'content']
     ordering_fields = ['id','title']
 
