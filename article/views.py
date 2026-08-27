@@ -3,8 +3,6 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from .models import Article
 from .serializers import ArticleSerializer
-from rest_framework.permissions import AllowAny
-from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 from .permissions import IsOwnerOrReadOnly
 from .paginations import CustomArticlePagination
