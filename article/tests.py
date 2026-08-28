@@ -26,3 +26,9 @@ class ArticleAPITestCase(APITestCase):
     def test_get_article_list(self):
         response = self.client.get(self.articles_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_article_detail(self):
+        url = reverse('article-detail', args=[self.article.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['title'], self.article.title)
