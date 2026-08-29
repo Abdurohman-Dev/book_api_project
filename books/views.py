@@ -2,9 +2,11 @@ from rest_framework import generics, permissions, filters
 from django_filters.rest_framework import DjangoFilterBackend
 from django.contrib.auth.models import User
 from .models import Book
-from .serializers import RegisterSerializer, BookSerializer
+from .serializers import RegisterSerializer, BookSerializer, UserProfileSerializer
 from .permissions import IsOwnerOrReadOnly
 from .pagination import BookPagination
+from rest_framework.generics import RetrieveUpdateAPIView
+from rest_framework.permissions import IsAuthenticated
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -29,6 +31,11 @@ class BookDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
-
     def perform_update(self, serializer):
         serializer.save(owner=self.request.user)
+class UserProfileview(RetrieveUpdateAPIView):
+    serializer_class = UserProfileSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user

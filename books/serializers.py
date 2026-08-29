@@ -13,7 +13,8 @@ class RegisterSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(
             username=validated_data['username'],
             email=validated_data.get('email', ''),
-            password=validated_data['password']
+            password=validated_data['password'],
+            first_name = validated_data['first_name']
         )
         return user
 
@@ -27,3 +28,8 @@ class BookSerializer(serializers.ModelSerializer):
             'category', 'price', 'published_date', 
             'owner', 'created_at'
         ]
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id','username','email','first_name','last_name']
+        read_only_fields = ['id','username']

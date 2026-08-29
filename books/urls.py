@@ -3,7 +3,7 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-from .views import RegisterView, BookListCreateView, BookDetailView
+from .views import RegisterView, BookListCreateView, BookDetailView , UserProfileview
 
 urlpatterns = [
     # Auth Endpoints
@@ -14,4 +14,5 @@ urlpatterns = [
     # Book Endpoints
     path('books/', BookListCreateView.as_view(), name='book-list-create'),
     path('books/<int:pk>/', BookDetailView.as_view(), name='book-detail'),
+    path('profile/', UserProfileview.as_view(), name='user-profile')
 ]
