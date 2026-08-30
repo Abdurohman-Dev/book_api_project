@@ -1,12 +1,14 @@
-from rest_framework import generics, permissions, filters
+from rest_framework import generics, permissions, filters, status
 from django_filters.rest_framework import DjangoFilterBackend
 from django.contrib.auth.models import User
 from .models import Book
-from .serializers import RegisterSerializer, BookSerializer, UserProfileSerializer
+from .serializers import RegisterSerializer, BookSerializer, UserProfileSerializer, ChangePasswordSerializer
 from .permissions import IsOwnerOrReadOnly
 from .pagination import BookPagination
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from rest_framework.response import Response
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -39,3 +41,19 @@ class UserProfileview(RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user
+class ChangePasswordView(APIView):
+    serializer_class = ChangePasswordSerializer
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, *args, **kwargs):
+        serializer = ChangePasswordSerializer(data= request.data, context={'request': request})
+
+        if serializer.is_valid():
+            user = request.user
+            user.set_password(serializer.validated_data['new_password'])
+            user.save()
+            return Response(
+                {"message": "የይለፍ ቃልህ ብስኬት ተቀይሯል!"},
+                status = status.HTTP_200_OK
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

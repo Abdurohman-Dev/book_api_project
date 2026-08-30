@@ -33,3 +33,11 @@ class UserProfileSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id','username','email','first_name','last_name']
         read_only_fields = ['id','username']
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(required=True, write_only=True)
+    new_password = serializers.CharField(required=True, write_only= True)
+
+    def validate_old_password(self, value):
+        user = self.context['request'].user
+        if not user.check_password(value):
+            raise serializers.ValidationError("የቀደመው የይለፍ ቃልህ ትክክል አይደለም።")
