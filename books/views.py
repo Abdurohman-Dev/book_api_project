@@ -1,8 +1,8 @@
 from rest_framework import generics, permissions, filters, status
 from django_filters.rest_framework import DjangoFilterBackend
 from django.contrib.auth.models import User
-from .models import Book
-from .serializers import RegisterSerializer, BookSerializer, UserProfileSerializer, ChangePasswordSerializer
+from .models import Book , UserProfile
+from .serializers import RegisterSerializer, BookSerializer, UserProfileSerializer, ChangePasswordSerializer, UserProfile
 from .permissions import IsOwnerOrReadOnly
 from .pagination import BookPagination
 from rest_framework.generics import RetrieveUpdateAPIView
@@ -57,3 +57,15 @@ class ChangePasswordView(APIView):
                 status = status.HTTP_200_OK
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class ProfileUploadViews(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserProfile
+
+    def post(self, request, *args, **kwargs):
+        profile, _= UserProfile.objects.get_or_create(user=request.user)
+        serializer = UserProfile(profile, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.error, status=status.HTTP_400_BAD_REQUEST)

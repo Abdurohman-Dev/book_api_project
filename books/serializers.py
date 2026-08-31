@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Book
+from .models import Book, UserProfile
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=6)
@@ -41,3 +41,7 @@ class ChangePasswordSerializer(serializers.Serializer):
         user = self.context['request'].user
         if not user.check_password(value):
             raise serializers.ValidationError("የቀደመው የይለፍ ቃልህ ትክክል አይደለም።")
+class UserProfile(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = ['id','bio','image']
