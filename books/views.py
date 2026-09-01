@@ -2,14 +2,20 @@ from rest_framework import generics, permissions, filters, status
 from django_filters.rest_framework import DjangoFilterBackend
 from django.contrib.auth.models import User
 from .models import Book , UserProfile
-from .serializers import RegisterSerializer, BookSerializer, UserProfileSerializer, ChangePasswordSerializer, UserProfile
+from .serializers import ( 
+    RegisterSerializer,
+    BookSerializer,
+    UserProfileSerializer, 
+    ChangePasswordSerializer, 
+    ProfileImageSerializer
+)
 from .permissions import IsOwnerOrReadOnly
 from .pagination import BookPagination
-from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
-
+from drf_spectacular.utils import extend_schema
+from rest_framework.parsers import MultiPartParser, FormParser
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
@@ -35,7 +41,7 @@ class BookDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
     def perform_update(self, serializer):
         serializer.save(owner=self.request.user)
-class UserProfileview(RetrieveUpdateAPIView):
+class UserProfileview(generics.RetrieveUpdateAPIView):
     serializer_class = UserProfileSerializer
     permission_classes = [IsAuthenticated]
 
@@ -59,13 +65,27 @@ class ChangePasswordView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 class ProfileUploadViews(APIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = UserProfile
+    parser_classes = [MultiPartParser, FormParser]
+    serializer_class = ProfileImageSerializer
+
+    @extend_schema(
+            request={
+                'multipart/form-data': {
+                    'type': 'object',
+                    'properties': {
+                        'bio': {'type': 'string'},
+                        'image': {'type': 'string', 'format': 'binary'},
+                    },
+                }
+            },
+            responses={200: ProfileImageSerializer}
+    )
 
     def post(self, request, *args, **kwargs):
-        profile, _= UserProfile.objects.get_or_create(user=request.user)
-        serializer = UserProfile(profile, data=request.data, partial=True)
+        profile, _ = UserProfile.objects.get_or_create(user=request.user)
+        serializer = ProfileImageSerializer(profile, data=request.data, partial=True)
 
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.error, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

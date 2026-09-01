@@ -41,7 +41,8 @@ class ChangePasswordSerializer(serializers.Serializer):
         user = self.context['request'].user
         if not user.check_password(value):
             raise serializers.ValidationError("የቀደመው የይለፍ ቃልህ ትክክል አይደለም።")
-class UserProfile(serializers.ModelSerializer):
+class ProfileImageSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(required= False)
     class Meta:
         model = UserProfile
         fields = ['id','bio','image']
