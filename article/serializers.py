@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Article
 from drf_spectacular.utils import extend_schema_field
+from django.contrib.auth.models import User
 
 class ArticleSerializer(serializers.ModelSerializer):
     reading_time = serializers.SerializerMethodField()
@@ -31,3 +32,8 @@ class ChangePasswordSerializer(serializers.Serializer):
         if not user.check_password(value):
             raise serializers.ValidationError("የቀደመው የይለፍ ቃል ትክክል አይደለም።")
         return value
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'first_name', 'last_name']
+        read_only_fields = ['id','username']

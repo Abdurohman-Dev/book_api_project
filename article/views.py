@@ -8,8 +8,9 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .permissions import IsOwnerOrReadOnly
 from .paginations import CustomArticlePagination
 from rest_framework.filters import SearchFilter, OrderingFilter
-from .serializers import ChangePasswordSerializer
+from .serializers import ChangePasswordSerializer, UserProfileSerializer
 from rest_framework.views import APIView
+from rest_framework.generics import RetrieveUpdateAPIView
 class ArticleViewSet(viewsets.ModelViewSet):
     queryset = Article.objects.select_related('author').all()
     serializer_class = ArticleSerializer
@@ -38,6 +39,7 @@ class ArticleViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(approved, many=True)
         return Response(serializer.data)
 class ChangePasswordView(APIView):
+    serializer_class = ChangePasswordSerializer
     permission_classes = [IsAuthenticated]
 
     def put(self, request, *args, **kargs):
@@ -48,6 +50,9 @@ class ChangePasswordView(APIView):
             user.save()
             return Response ({"message": "የይለፍ ቃልህ ብስኬት ተቀይሯል!"}, status = status.HTTP_200_OK)
         return Response (serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class UserProfileview(RetrieveUpdateAPIView):
+    serializer_class = UserProfileSerializer
+    permission_classes = [IsAuthenticated]
 
-
-        
+    def get_object(self):
+        return self.request.user
