@@ -47,22 +47,6 @@ class UserProfileview(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user
-class ChangePasswordView(APIView):
-    serializer_class = ChangePasswordSerializer
-    permission_classes = [IsAuthenticated]
-
-    def put(self, request, *args, **kwargs):
-        serializer = ChangePasswordSerializer(data= request.data, context={'request': request})
-
-        if serializer.is_valid():
-            user = request.user
-            user.set_password(serializer.validated_data['new_password'])
-            user.save()
-            return Response(
-                {"message": "የይለፍ ቃልህ ብስኬት ተቀይሯል!"},
-                status = status.HTTP_200_OK
-            )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 class ProfileUploadViews(APIView):
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
@@ -89,3 +73,14 @@ class ProfileUploadViews(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class ChangePasswordView(APIView): 
+    serializer_class = ChangePasswordSerializer
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, *args, **kwargs):
+        serializer = ChangePasswordSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            user = request.user 
+            user.set_password(serializer.validated_data['new_password'])
+            user.save()
+            return Response({"message": "የይለፍ ቃልህ ብስኬት ተቀይሯል!"}, status=status.HTTP_200_OK)
