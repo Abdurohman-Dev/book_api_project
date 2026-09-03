@@ -3,7 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .models import Article
-from .serializers import ArticleSerializer
+from .serializers import ArticleSerializer, ChangePasswordSerializer
 from django_filters.rest_framework import DjangoFilterBackend
 from .permissions import IsOwnerOrReadOnly
 from .paginations import CustomArticlePagination
@@ -45,3 +45,17 @@ class UserProfileview(RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user
+class ChangePasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ChangePasswordSerializer
+
+    def put(self, request, *args, **kwargs):
+        serializer = ChangePasswordSerializer(data=request.data, context={'request':request })
+        if serializer.is_valid():
+            user = request.user
+            user.set_password(serializer.validated_data['new_password'])
+            user.save()
+            return Response({'message': 'የይለፍ ቃልህ ብስኬት ተቀይሯል!'}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+ 
