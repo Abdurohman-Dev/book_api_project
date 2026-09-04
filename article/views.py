@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from .models import Article
 from .serializers import ArticleSerializer, ChangePasswordSerializer
 from django_filters.rest_framework import DjangoFilterBackend
-from .permissions import IsOwnerOrReadOnly
+from .permissions import ISOwnerAdminForDeleteOnly
 from .paginations import CustomArticlePagination
 from rest_framework.filters import SearchFilter, OrderingFilter
 from .serializers import UserProfileSerializer
@@ -14,11 +14,14 @@ from rest_framework.generics import RetrieveUpdateAPIView
 class ArticleViewSet(viewsets.ModelViewSet):
     queryset = Article.objects.select_related('author').all()
     serializer_class = ArticleSerializer
-    permission_classes = [IsOwnerOrReadOnly]
+    permission_classes = [ISOwnerAdminForDeleteOnly]
     pagination_class = CustomArticlePagination
 
     def perform_create(self, serializer):
-        serializer.save(author= self.request.user)
+        if self.request.user.is_authenticated:
+            serializer.save(author= self.request.user)
+        else:
+            serializer.save()
 
     filter_backends = [DjangoFilterBackend, SearchFilter , OrderingFilter ]
 
