@@ -9,7 +9,7 @@ from .serializers import (
     ChangePasswordSerializer, 
     ProfileImageSerializer
 )
-from .permissions import IsOwnerOrReadOnly
+from .permissions import IsStaffOrReadOnly
 from .pagination import BookPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
@@ -38,7 +38,7 @@ class BookListCreateView(generics.ListCreateAPIView):
 class BookDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+    permission_classes = [IsStaffOrReadOnly]
     def perform_update(self, serializer):
         serializer.save(owner=self.request.user)
 class UserProfileview(generics.RetrieveUpdateAPIView):
