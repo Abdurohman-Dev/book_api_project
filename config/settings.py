@@ -153,8 +153,9 @@ REST_FRAMEWORK = {
         'user': '10/minute',
         
     },
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 2,
+    'DEFAULT_FILTERING_BACKENDS':[
+        'django_filter.rest_framework.DjangoFilterBackend',
+    ],
 }
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Book Management API',
