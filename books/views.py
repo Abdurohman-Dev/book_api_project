@@ -1,4 +1,4 @@
-from rest_framework import generics, permissions, filters, status
+from rest_framework import generics, permissions,filters, status
 from django.contrib.auth.models import User
 from .models import Book , UserProfile
 from .serializers import ( 
@@ -8,14 +8,15 @@ from .serializers import (
     ProfileImageSerializer,
     UserProfileSerializer
 )
+from rest_framework.filters import SearchFilter
+from django_filters.rest_framework import DjangoFilterBackend
+from .pagination import CustomBookPagination
 from .permissions import IsOwnerOrStaffCanEditDelete
-from .pagination import BookPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema
 from rest_framework.parsers import MultiPartParser, FormParser
-from django_filters.rest_framework import DjangoFilterBackend
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
@@ -25,12 +26,12 @@ class BookListCreateView(generics.ListCreateAPIView):
     queryset = Book.objects.all().order_by('-created_at')
     serializer_class = BookSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['category','author']
+    pagination_class = CustomBookPagination
 
 
-    
+    filter_backends = [DjangoFilterBackend,SearchFilter]
+    filterset_fields = ['category','owner__username','created_at']
+    search_fields = ['title','description']
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
@@ -39,11 +40,13 @@ class BookDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
     permission_classes = [IsOwnerOrStaffCanEditDelete]
+
     def perform_update(self, serializer):
         serializer.save(owner=self.request.user)
 class UserProfileview(generics.RetrieveUpdateAPIView):
     serializer_class = UserProfileSerializer
     permission_classes = [IsAuthenticated]
+
 
     def get_object(self):
         return self.request.user

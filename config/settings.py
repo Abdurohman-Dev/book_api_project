@@ -156,6 +156,7 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTERING_BACKENDS':[
         'django_filter.rest_framework.DjangoFilterBackend',
     ],
+    
 }
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Book Management API',
