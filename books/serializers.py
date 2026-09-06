@@ -16,9 +16,20 @@ class RegisterSerializer(serializers.ModelSerializer):
             password=validated_data['password']
         )
         return user
+def validate_no_number(value):
+    if any(char.isdigit() for char in value):
+        raise serializers.ValidationError("በደራሲው ስም ውስጥ ቁጥር ማስገባት አየቻልም!")
+    return value
+
+def validate_no_special_chars(value):
+    if '#' in value or '@' in value:
+        raise serializers.ValidationError("በዚህ ቦታ ላይ '@' and '#' መጠቀም አይቻልም! ")
+    return value
 
 class BookSerializer(serializers.ModelSerializer):
     owner = serializers.ReadOnlyField(source='owner.username')
+    author = serializers.CharField(validators=[validate_no_number])
+    title = serializers.CharField(validators=[validate_no_special_chars])
 
     class Meta:
         model = Book
@@ -28,19 +39,22 @@ class BookSerializer(serializers.ModelSerializer):
             'owner', 'created_at'
         ]
     def validate_price(self, value):
-        if value < 0 :
+        if value < 0: 
             raise serializers.ValidationError("የመጽሃፉ ዋጋ ከ 0 ማነስ የለበትም!")
         return value
+
     def validate(self, data):
-        title = data.get('title')
         author = data.get('author')
+        title = data.get('title')
         category = data.get('category')
         price = data.get('price')
-        if title and author and title.lower() == author.lower():
-            raise serializers.ValidationError({"title":"የመጽሃፉ ርዕስና የደራሲው ስም አንድ አይነት መሆን የለባቸውም!"})
-        if category == 'Biography' and price is not None and  price < 500:
-            raise serializers.ValidationError({"price":"የ Biography መጽሃፍ ዋጋ ክ 500 ማነስ የለበትም!"})
+
+        if author and title and author.lower() == title.lower() :
+            raise serializers.ValidationError({"title": "የመጽሃፉ ርዕስ እና ደራሲው ስም ተመሳሳይ መሆን አይችሉም!"})
+        if category == 'Biography' and price is not None and price < 500:
+            raise serializers.ValidationError({"price": "የ Biography መጽሃፍ ዋጋ ከ 500 ብር ማነስ የለበትም! "})
         return data
+
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -60,4 +74,3 @@ class ChangePasswordSerializer(serializers.Serializer):
         if not user.check_password(value):
             raise serializers.ValidationError("የቀደመው የይለፍ ቃልህ ትክክል አይደለም።")
         return value
-            
