@@ -27,6 +27,20 @@ class BookSerializer(serializers.ModelSerializer):
             'category', 'price', 'published_date', 
             'owner', 'created_at'
         ]
+    def validate_price(self, value):
+        if value < 0 :
+            raise serializers.ValidationError("የመጽሃፉ ዋጋ ከ 0 ማነስ የለበትም!")
+        return value
+    def validate(self, data):
+        title = data.get('title')
+        author = data.get('author')
+        category = data.get('category')
+        price = data.get('price')
+        if title and author and title.lower() == author.lower():
+            raise serializers.ValidationError({"title":"የመጽሃፉ ርዕስና የደራሲው ስም አንድ አይነት መሆን የለባቸውም!"})
+        if category == 'Biography' and price is not None and  price < 500:
+            raise serializers.ValidationError({"price":"የ Biography መጽሃፍ ዋጋ ክ 500 ማነስ የለበትም!"})
+        return data
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User

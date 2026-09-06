@@ -8,15 +8,15 @@ from .serializers import (
     ProfileImageSerializer,
     UserProfileSerializer
 )
-from rest_framework.filters import SearchFilter
-from django_filters.rest_framework import DjangoFilterBackend
-from .pagination import CustomBookPagination
 from .permissions import IsOwnerOrStaffCanEditDelete
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema
 from rest_framework.parsers import MultiPartParser, FormParser
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter
+from .pagination import Day123Pagination
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
@@ -26,11 +26,10 @@ class BookListCreateView(generics.ListCreateAPIView):
     queryset = Book.objects.all().order_by('-created_at')
     serializer_class = BookSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    pagination_class = CustomBookPagination
-
+    pagination_class = Day123Pagination
 
     filter_backends = [DjangoFilterBackend,SearchFilter]
-    filterset_fields = ['category','owner__username','created_at']
+    filterset_fields = ['category','owner__username']
     search_fields = ['title','description']
 
     def perform_create(self, serializer):
