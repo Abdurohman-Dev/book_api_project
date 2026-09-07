@@ -8,8 +8,8 @@ from .serializers import (
     ProfileImageSerializer,
     UserProfileSerializer
 )
-from .permissions import IsOwnerOrStaffCanEditDelete
-from rest_framework.permissions import IsAuthenticated
+from .permissions import IsOwnerOrStaffCanEditDelete, IsOwnerOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly , IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema
@@ -23,7 +23,7 @@ class RegisterView(generics.CreateAPIView):
     permission_classes = [permissions.AllowAny]
 
 class BookListCreateView(generics.ListCreateAPIView):
-    queryset = Book.objects.all().order_by('-created_at')
+    queryset = Book.objects.all()
     serializer_class = BookSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     pagination_class = Day123Pagination
@@ -34,6 +34,7 @@ class BookListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
+        
 
 class BookDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Book.objects.all()
