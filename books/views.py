@@ -32,6 +32,13 @@ class BookListCreateView(generics.ListCreateAPIView):
     filterset_fields = ['category','owner__username']
     search_fields = ['title','description']
 
+    @extend_schema(summary="የመጽህፍ ዝርዝር ማውጫ",
+                   description = "አድስ መጽሃፍ ለመመዝገብ ያገለግላል። ባለቤቱ() በራስ-ስር ይያያዛል።"
+                   )
+
+    def post (self,request, *args, **kwargs):
+        return super().post(request,*args, **kwargs)
+
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
         
