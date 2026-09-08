@@ -10,13 +10,55 @@ from .paginations import CustomArticlePagination
 from rest_framework.filters import SearchFilter, OrderingFilter
 from .serializers import UserProfileSerializer
 from rest_framework.views import APIView
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema,extend_schema_view, OpenApiParameter, OpenApiExample
 from rest_framework.generics import RetrieveUpdateAPIView
+@extend_schema_view(
+    list= extend_schema(
+        summary= "Articles ዝርዝር ማሳያ ",
+        description="በሲስተሙ ውስጥ የሚገኙ ሁሉንም አርቲክሎች ዝርዝር ያመጣል።",
+        tags=['Articles Management'],
+        parameters=[
+            OpenApiParameter(
+                name= 'is_approved',
+                type= OpenApiTypes.BOOL,
+                location=OpenApiParameter.QUERY,
+                description='የጸደቁ እርቲክሎችን ብቻ ለመለየት(True/False)'
+            )
+        ]
+    ),
+    create = extend_schema(
+        summary="Post New Articles",
+        description="አድስ አርቲክ ለመፍጠርና ለማተም ያገለግላል። ጸሀፊው (owner) በራስ ሰር ይያያዛል።",
+        tags=['Article Management'],
+        examples=[
+            OpenApiExample(
+                'Valid Article Example',
+                summary="ትክክለኛ የአርቲክል ምሳሌ",
+                value={
+                    'title': 'DRF Mastery in 2026',
+                    'content': 'Deep work leads to high-paying skills.',
+                    'is_approved': True
+                }
+            )
+        ]
+    ),
+    retrieve = extend_schema(
+        summary="የአንድ አርቲክል ዝርዝር ማሳያ",
+        description="የአርቲክሉን ID ተጠቅሞ ሙሉ ዝርዝር መረጃውን ያመጣል።"
+    ),
+    destroy= extend_schema(
+        summary= "አርቲክል ማጥፊያ",
+        description= "አርቲክሉን ከሲስተም ያጠፋል"
+    )
+)
 class ArticleViewSet(viewsets.ModelViewSet):
     queryset = Article.objects.select_related('author').all()
     serializer_class = ArticleSerializer
     permission_classes = [ISOwnerAdminForDeleteOnly]
     pagination_class = CustomArticlePagination
 
+    
     def perform_create(self, serializer):
         if self.request.user.is_authenticated:
             serializer.save(author= self.request.user)
