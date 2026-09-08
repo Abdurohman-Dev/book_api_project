@@ -12,7 +12,8 @@ from .permissions import IsOwnerOrStaffCanEditDelete, IsOwnerOrReadOnly
 from rest_framework.permissions import IsAuthenticatedOrReadOnly , IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
+from drf_spectacular.types import OpenApiTypes
 from rest_framework.parsers import MultiPartParser, FormParser
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
@@ -32,9 +33,41 @@ class BookListCreateView(generics.ListCreateAPIView):
     filterset_fields = ['category','owner__username']
     search_fields = ['title','description']
 
-    @extend_schema(summary="የመጽህፍ ዝርዝር ማውጫ",
-                   description = "አድስ መጽሃፍ ለመመዝገብ ያገለግላል። ባለቤቱ() በራስ-ስር ይያያዛል።"
-                   )
+    @extend_schema(
+            summary= "የመጽሃፍ ዝርዝር ", 
+            description="መጽሃፍን በ Category ወይም በ Title ለመፈለግ ያገለግላል።",
+            tags=['Book Management'],
+            parameters=[
+                OpenApiParameter(
+                    name='category',
+                    type=OpenApiTypes.STR,
+                    location=OpenApiParameter.QUERY,
+                    description="የመጽሃፉን Category ይምረጡ ",
+                    enum= ['Fiction', 'Non-Fiction', 'Science','History', 'Technology','Biography'],
+                    default= 'Fiction'
+                    
+
+            )]
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    @extend_schema(
+            summary="አድስ መጽህፍ መፍጠሪያ",
+            description = "አድስ መጽሃፍ ለመመዝገብ ያገለግላል። ባለቤቱ() በራስ-ስር ይያያዛል።",
+            examples=[
+                OpenApiExample(
+                    'Valid Book Example',
+                    value={
+                        'title': 'Python Deep Work',
+                        'description': 'Mastering DRF step by step',
+                        'category': 'Technology',
+                        'author': 'Abdurohman',
+                        'price' : '600'
+                    }
+                )
+            ]
+            )
 
     def post (self,request, *args, **kwargs):
         return super().post(request,*args, **kwargs)
@@ -47,6 +80,19 @@ class BookDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
     permission_classes = [IsOwnerOrStaffCanEditDelete]
+
+    @extend_schema(
+            summary="የአንድ ምጽሃፍ ዝርዝር ማሳያ",
+            description="የመጽሃፉን ID ተጠቅሞ ዝርዝር መረጃዎችን ያመጣል። "
+            )
+    def get(self, request, *args, **kwargs):
+        return super ().get(request, *args, **kwargs)
+    @extend_schema(
+            summary= "መጽሃፍ ማጥፊያ", 
+            description="መጽሃፉን ክሲስተም ያጠፋል። ይህን ማድረግ የሚችለው የመጽሃፉ ባለቤት ብቻ ነው።"
+    )
+    def delete(self, request, *args, **kwargs):
+        return super().delete(request, *args, **kwargs)
 
     def perform_update(self, serializer):
         serializer.save(owner=self.request.user)
