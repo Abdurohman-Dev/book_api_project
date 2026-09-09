@@ -1,3 +1,5 @@
+from ast import Is
+
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -5,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from .models import Article
 from .serializers import ArticleSerializer, ChangePasswordSerializer
 from django_filters.rest_framework import DjangoFilterBackend
-from .permissions import ISOwnerAdminForDeleteOnly
+from .permissions import ISOwnerAdminForDeleteOnly, IsOwnerOrReadOnly, IsAdminOrOwnerStaff
 from drf_spectacular.utils import extend_schema,extend_schema_view, OpenApiExample, OpenApiParameter
 from drf_spectacular.types import OpenApiTypes
 from .paginations import CustomArticlePagination
@@ -56,7 +58,7 @@ from rest_framework.generics import RetrieveUpdateAPIView
 class ArticleViewSet(viewsets.ModelViewSet):
     queryset = Article.objects.select_related('author').all()
     serializer_class = ArticleSerializer
-    permission_classes = [ISOwnerAdminForDeleteOnly]
+    permission_classes = [IsAdminOrOwnerStaff]
     pagination_class = CustomArticlePagination
 
     

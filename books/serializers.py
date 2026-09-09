@@ -39,10 +39,9 @@ class BookSerializer(serializers.ModelSerializer):
             'owner', 'created_at'
         ]
     def validate_price(self, value):
-        if value < 0: 
+        if value < 50: 
             raise serializers.ValidationError("የመጽሃፉ ዋጋ ከ 0 ማነስ የለበትም!")
         return value
-
     def validate(self, data):
         author = data.get('author')
         title = data.get('title')
