@@ -8,12 +8,12 @@ from .serializers import (
     ProfileImageSerializer,
     UserProfileSerializer
 )
+from drf_spectacular.utils import extend_schema, OpenApiParameter,OpenApiExample
+from drf_spectacular.types import OpenApiTypes
 from .permissions import IsOwnerOrStaffCanEditDelete, IsOwnerOrReadOnly
 from rest_framework.permissions import IsAuthenticatedOrReadOnly , IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
-from drf_spectacular.types import OpenApiTypes
 from rest_framework.parsers import MultiPartParser, FormParser
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
@@ -34,27 +34,27 @@ class BookListCreateView(generics.ListCreateAPIView):
     search_fields = ['title','description']
 
     @extend_schema(
-            summary= "የመጽሃፍ ዝርዝር ", 
-            description="መጽሃፍን በ Category ወይም በ Title ለመፈለግ ያገለግላል።",
+            summary="የመጽሃፍ ዝርዝር ",
+            description="መጽሃፍትን በ Catagory Titile ለመፈለግ ያገለግላል። ",
             tags=['Book Management'],
             parameters=[
                 OpenApiParameter(
-                    name='category',
-                    type=OpenApiTypes.STR,
-                    location=OpenApiParameter.QUERY,
-                    description="የመጽሃፉን Category ይምረጡ ",
-                    enum= ['Fiction', 'Non-Fiction', 'Science','History', 'Technology','Biography'],
+                    name= 'category',
+                    type = OpenApiTypes.STR,
+                    location= OpenApiParameter.QUERY,
+                    description="የመጽሃፉን Category ይምረጡ",
+                    enum=['Fiction','Non-Fiction','History','Biography','Science'],
                     default= 'Fiction'
-                    
-
-            )]
+                )
+            ]
     )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
 
     @extend_schema(
-            summary="አድስ መጽህፍ መፍጠሪያ",
-            description = "አድስ መጽሃፍ ለመመዝገብ ያገለግላል። ባለቤቱ() በራስ-ስር ይያያዛል።",
+            summary="አድስ መጽሃፍ መመዝገቢያ",
+            description="አድስ መጽሃፍ ለመመዝገብ ያገለግላል። ባለቤቱ በ (owner) በራስ-ሰር የሆናል።",
+            tags=['Book Management'],
             examples=[
                 OpenApiExample(
                     'Valid Book Example',
@@ -62,15 +62,14 @@ class BookListCreateView(generics.ListCreateAPIView):
                         'title': 'Python Deep Work',
                         'description': 'Mastering DRF step by step',
                         'category': 'Technology',
-                        'author': 'Abdurohman',
-                        'price' : '600'
+                        'author' : 'Abdurohman',
+                        'price': 600
                     }
                 )
             ]
-            )
-
-    def post (self,request, *args, **kwargs):
-        return super().post(request,*args, **kwargs)
+    )
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
@@ -80,19 +79,6 @@ class BookDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
     permission_classes = [IsOwnerOrStaffCanEditDelete]
-
-    @extend_schema(
-            summary="የአንድ ምጽሃፍ ዝርዝር ማሳያ",
-            description="የመጽሃፉን ID ተጠቅሞ ዝርዝር መረጃዎችን ያመጣል። "
-            )
-    def get(self, request, *args, **kwargs):
-        return super ().get(request, *args, **kwargs)
-    @extend_schema(
-            summary= "መጽሃፍ ማጥፊያ", 
-            description="መጽሃፉን ክሲስተም ያጠፋል። ይህን ማድረግ የሚችለው የመጽሃፉ ባለቤት ብቻ ነው።"
-    )
-    def delete(self, request, *args, **kwargs):
-        return super().delete(request, *args, **kwargs)
 
     def perform_update(self, serializer):
         serializer.save(owner=self.request.user)

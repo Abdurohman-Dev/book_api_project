@@ -6,52 +6,53 @@ from .models import Article
 from .serializers import ArticleSerializer, ChangePasswordSerializer
 from django_filters.rest_framework import DjangoFilterBackend
 from .permissions import ISOwnerAdminForDeleteOnly
+from drf_spectacular.utils import extend_schema,extend_schema_view, OpenApiExample, OpenApiParameter
+from drf_spectacular.types import OpenApiTypes
 from .paginations import CustomArticlePagination
 from rest_framework.filters import SearchFilter, OrderingFilter
 from .serializers import UserProfileSerializer
 from rest_framework.views import APIView
-from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import extend_schema,extend_schema_view, OpenApiParameter, OpenApiExample
 from rest_framework.generics import RetrieveUpdateAPIView
 @extend_schema_view(
-    list= extend_schema(
-        summary= "Articles ዝርዝር ማሳያ ",
-        description="በሲስተሙ ውስጥ የሚገኙ ሁሉንም አርቲክሎች ዝርዝር ያመጣል።",
-        tags=['Articles Management'],
-        parameters=[
-            OpenApiParameter(
-                name= 'is_approved',
-                type= OpenApiTypes.BOOL,
-                location=OpenApiParameter.QUERY,
-                description='የጸደቁ እርቲክሎችን ብቻ ለመለየት(True/False)'
-            )
-        ]
-    ),
-    create = extend_schema(
-        summary="Post New Articles",
-        description="አድስ አርቲክ ለመፍጠርና ለማተም ያገለግላል። ጸሀፊው (owner) በራስ ሰር ይያያዛል።",
-        tags=['Article Management'],
-        examples=[
-            OpenApiExample(
-                'Valid Article Example',
-                summary="ትክክለኛ የአርቲክል ምሳሌ",
-                value={
-                    'title': 'DRF Mastery in 2026',
-                    'content': 'Deep work leads to high-paying skills.',
-                    'is_approved': True
-                }
-            )
-        ]
-    ),
-    retrieve = extend_schema(
-        summary="የአንድ አርቲክል ዝርዝር ማሳያ",
-        description="የአርቲክሉን ID ተጠቅሞ ሙሉ ዝርዝር መረጃውን ያመጣል።"
-    ),
-    destroy= extend_schema(
-        summary= "አርቲክል ማጥፊያ",
-        description= "አርቲክሉን ከሲስተም ያጠፋል"
+        list= extend_schema(
+            summary="የአንቀጾች (Articles) ዝርዝር ማሳያ",
+            description="የአንቀጾች ዝርዝር ማሳያ ነው። እንዲሁም በመረጃ መስመር የተመረጡትን አንቀጾች ማግኘት ይችላሉ።",
+            tags=['Article Management'],
+            parameters=[
+                OpenApiParameter(
+                    name='is_approved',
+                    type=OpenApiTypes.BOOL,
+                    location=OpenApiParameter.QUERY,
+                    description="Filter articles by approval status"
+                )
+            ]
+        ),
+        create= extend_schema(
+            summary="አዲስ አንቀጽ መመዝገቢያ",
+            description="አዲስ አንቀጽ ለመመዝገብ ያገለግላል። ባለቤቱ በ (author) በራስ-ሰር የሆናል።",
+            tags=['Article Management'],
+            examples=[
+                OpenApiExample(
+                    'Valid Article Example',
+                    summary='A valid example of an article',
+                    description='This is a valid example of an article with all required fields.',
+                    value={
+                        'title': 'Sample Article Title',
+                        'content': 'This is the content of the sample article.',
+                        'is_approved': False
+                    },
+                )
+            ]
+        ),
+        retrieve= extend_schema(
+            summary= "የአንድ አርቲክል ዝርዝር",
+            tags=['Articles Management']
+        ),
+        destroy=extend_schema(
+            summary="Delete Aritcles ",
+            tags=['Articles Management']
+        )
     )
-)
 class ArticleViewSet(viewsets.ModelViewSet):
     queryset = Article.objects.select_related('author').all()
     serializer_class = ArticleSerializer
