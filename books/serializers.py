@@ -39,9 +39,43 @@ class BookSerializer(serializers.ModelSerializer):
             'owner', 'created_at'
         ]
     def validate_price(self, value):
-        if value < 50: 
-            raise serializers.ValidationError("የመጽሃፉ ዋጋ ከ 0 ማነስ የለበትም!")
+        if value < 50 :
+            raise serializers.ValidationError("የመጽሃፍ ዋጋ ከ 50 ብር ማነስ የለበትም!")
         return value
+
+    def validate_title(self, value):
+        if not value[0].isupper():
+            raise serializers.ValidationError("Title must start with a cap")
+        return value
+
+    def validate_description(self, value):
+        if len(value) < 13:
+            raise serializers.ValidationError("Description must be at least 13 characters long.")
+        return value
+    def validate_category(self, value):
+        if value not in ['Fiction', 'Technology','Science']:
+            raise serializers.ValidationError("Category must be Fiction, Technology and Science")
+        return value
+    
+    def validate_price(self, value):
+        if value > 10000:
+            raise serializers.ValidationError("Price cannot exceed 10,000 ETB.")
+        return value
+    def validate_title(self, value):
+        if value.isdigit():
+            raise serializers.ValidationError("Title cannot contain number.")
+        return value
+
+    def validate_author(self,value):
+        if  len(value.split()) < 2 :
+            raise serializers.ValidationError("Author name must include both first and last name.")
+        return value
+    def validate_description(self, value):
+        lower_value = value.lower()
+        if not (lower_value.startswith('django') or lower_value.startswith('python')):
+            raise serializers.ValidationError("Discription must start with Django or Python.")
+        return value    
+
     def validate(self, data):
         author = data.get('author')
         title = data.get('title')
