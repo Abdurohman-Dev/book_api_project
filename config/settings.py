@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-k3#hdoz!dvw+pvwu&#al4bn752nk4g49_v1-nr89cx**301m-t
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -185,3 +185,4 @@ SIMPLE_JWT = {
 import os 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')

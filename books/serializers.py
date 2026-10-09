@@ -30,7 +30,7 @@ class BookSerializer(serializers.ModelSerializer):
     owner = serializers.ReadOnlyField(source='owner.username')
     author = serializers.CharField(validators=[validate_no_number])
     title = serializers.CharField(validators=[validate_no_special_chars])
-    category= serializers.SlugRelatedField(slug_field='name',read_only = True)r
+    category= serializers.SlugRelatedField(slug_field='name',read_only = True)
     class Meta:
         model = Book
         fields = [
@@ -107,4 +107,3 @@ class ChangePasswordSerializer(serializers.Serializer):
         if not user.check_password(value):
             raise serializers.ValidationError("የቀደመው የይለፍ ቃልህ ትክክል አይደለም።")
         return value
-
