@@ -1,36 +1,39 @@
 from rest_framework import serializers
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from .models import Book, UserProfile
+
+User = get_user_model()
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=6)
-
+    password2 = serializers.CharField(write_only = True , min_length=6)
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'password']
-
+        fields = ['id', 'username', 'email', 'password', 'password2']
+    def validate(self, attrs):
+        if attrs['password'] != attrs['password2']:
+            raise serializers.ValidationError({"password": "ሁለቱም የይለፍ ቃሎች አይመሳሰሉም!"})
+        return attrs
     def create(self, validated_data):
+        validated_data.pop('password2')
         user = User.objects.create_user(
             username=validated_data['username'],
             email=validated_data.get('email', ''),
-            password=validated_data['password']
+            password=validated_data['password'],
         )
         return user
 def validate_no_number(value):
     if any(char.isdigit() for char in value):
         raise serializers.ValidationError("በደራሲው ስም ውስጥ ቁጥር ማስገባት አየቻልም!")
     return value
-
 def validate_no_special_chars(value):
     if '#' in value or '@' in value:
         raise serializers.ValidationError("በዚህ ቦታ ላይ '@' and '#' መጠቀም አይቻልም! ")
     return value
-
 class BookSerializer(serializers.ModelSerializer):
     owner = serializers.ReadOnlyField(source='owner.username')
     author = serializers.CharField(validators=[validate_no_number])
     title = serializers.CharField(validators=[validate_no_special_chars])
-    category= serializers.SlugRelatedField(slug_field='name',read_only = True)
     class Meta:
         model = Book
         fields = [
@@ -41,41 +44,26 @@ class BookSerializer(serializers.ModelSerializer):
     def validate_price(self, value):
         if value < 50 :
             raise serializers.ValidationError("የመጽሃፍ ዋጋ ከ 50 ብር ማነስ የለበትም!")
-        return value
-
-    def validate_title(self, value):
-        if not value[0].isupper():
-            raise serializers.ValidationError("Title must start with a cap")
-        return value
-
-    def validate_description(self, value):
-        if len(value) < 13:
-            raise serializers.ValidationError("Description must be at least 13 characters long.")
-        return value
-    def validate_category(self, value):
-        if value not in ['Fiction', 'Technology','Science']:
-            raise serializers.ValidationError("Category must be Fiction, Technology and Science")
-        return value
-    
-    def validate_price(self, value):
         if value > 10000:
             raise serializers.ValidationError("Price cannot exceed 10,000 ETB.")
         return value
     def validate_title(self, value):
+        if not value[0].isupper():
+            raise serializers.ValidationError("Title must start with a capital letter.")
         if value.isdigit():
-            raise serializers.ValidationError("Title cannot contain number.")
-        return value
-
-    def validate_author(self,value):
-        if  len(value.split()) < 2 :
-            raise serializers.ValidationError("Author name must include both first and last name.")
+            raise serializers.ValidationError("Title cannot contain only numbers.")
         return value
     def validate_description(self, value):
         lower_value = value.lower()
         if not (lower_value.startswith('django') or lower_value.startswith('python')):
             raise serializers.ValidationError("Discription must start with Django or Python.")
-        return value    
-
+        if len(value) < 13:
+            raise serializers.ValidationError("Description must be at least 13 characters long.")
+        return value
+    def validate_author(self,value):
+        if  len(value.split()) < 2 :
+            raise serializers.ValidationError("Author name must include both first and last name.")
+        return value
     def validate(self, data):
         author = data.get('author')
         title = data.get('title')
@@ -87,7 +75,6 @@ class BookSerializer(serializers.ModelSerializer):
         if category == 'Biography' and price is not None and price < 500:
             raise serializers.ValidationError({"price": "የ Biography መጽሃፍ ዋጋ ከ 500 ብር ማነስ የለበትም! "})
         return data
-
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
