@@ -1,5 +1,5 @@
-from rest_framework import generics, permissions,filters, status
-from django.contrib.auth.models import User
+from rest_framework import generics, permissions, status
+from django.contrib.auth import get_user_model
 from .models import Book , UserProfile
 from .serializers import ( 
     RegisterSerializer,
@@ -10,23 +10,24 @@ from .serializers import (
 )
 from drf_spectacular.utils import extend_schema, OpenApiParameter,OpenApiExample
 from drf_spectacular.types import OpenApiTypes
-from .permissions import IsOwnerOrStaffCanEditDelete, IsOwnerOrReadOnly
+from .permissions import IsOwnerOrStaffCanEditDelete
 from rest_framework.permissions import IsAuthenticatedOrReadOnly , IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.parsers import MultiPartParser, FormParser
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
 from .pagination import Day123Pagination
+
+User = get_user_model()
+
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
     permission_classes = [permissions.AllowAny]
-
 class BookListCreateView(generics.ListCreateAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     pagination_class = Day123Pagination
 
     filter_backends = [DjangoFilterBackend,SearchFilter]
@@ -48,9 +49,6 @@ class BookListCreateView(generics.ListCreateAPIView):
                 )
             ]
     )
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
-
     @extend_schema(
             summary="አድስ መጽሃፍ መመዝገቢያ",
             description="አድስ መጽሃፍ ለመመዝገብ ያገለግላል። ባለቤቱ በ (owner) በራስ-ሰር የሆናል።",
@@ -68,30 +66,21 @@ class BookListCreateView(generics.ListCreateAPIView):
                 )
             ]
     )
-    def post(self, request, *args, **kwargs):
-        return super().post(request, *args, **kwargs)
-
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
-        
-
 class BookDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
     permission_classes = [IsOwnerOrStaffCanEditDelete]
 
-    def perform_update(self, serializer):
-        serializer.save(owner=self.request.user)
-class UserProfileview(generics.RetrieveUpdateAPIView):
+class UserProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = UserProfileSerializer
     permission_classes = [IsAuthenticated]
 
-
     def get_object(self):
-        return self.request.user
-class ProfileUploadViews(APIView):
+        return self.request.user.profile
+class ProfileUploadView(APIView):
     permission_classes = [IsAuthenticated]
-    parser_classes = [MultiPartParser, FormParser]
     serializer_class = ProfileImageSerializer
 
     @extend_schema(
@@ -106,7 +95,6 @@ class ProfileUploadViews(APIView):
             },
             responses={200: ProfileImageSerializer}
     )
-
     def post(self, request, *args, **kwargs):
         profile, _ = UserProfile.objects.get_or_create(user=request.user)
         serializer = ProfileImageSerializer(profile, data=request.data, partial=True)
