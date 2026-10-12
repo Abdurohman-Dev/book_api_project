@@ -15,6 +15,6 @@ urlpatterns = [
     path('books/', BookListCreateView.as_view(), name='book-list-create'),
     path('books/<int:pk>/', BookDetailView.as_view(), name='book-detail'),
     path('profile/', UserProfileView.as_view(), name='user-profile'),
-    path('Upload-image/', ProfileUploadView.as_view(), name='upload-profile-image'),
+    path('upload-image/', ProfileUploadView.as_view(), name='upload-profile-image'),
     path('change-password/', ChangePasswordView.as_view(), name='change-password'),
 ]

@@ -25,7 +25,7 @@ class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
     permission_classes = [permissions.AllowAny]
 class BookListCreateView(generics.ListCreateAPIView):
-    queryset = Book.objects.all()
+    queryset = Book.objects.select_related('owner').all()
     serializer_class = BookSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
     pagination_class = Day123Pagination
@@ -69,7 +69,7 @@ class BookListCreateView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 class BookDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Book.objects.all()
+    queryset = Book.objects.select_related('owner').all()
     serializer_class = BookSerializer
     permission_classes = [IsOwnerOrStaffCanEditDelete]
 

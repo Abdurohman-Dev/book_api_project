@@ -39,8 +39,9 @@ class BookSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'title', 'author', 'description', 
             'category', 'price', 'published_date', 
-            'owner', 'created_at'
+            'owner', 'created_at', "updated_at"
         ]
+        read_only_fields = ['owner', 'created_at', 'updated_at']
     def validate_price(self, value):
         if value < 50 :
             raise serializers.ValidationError("የመጽሃፍ ዋጋ ከ 50 ብር ማነስ የለበትም!")
