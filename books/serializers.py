@@ -11,7 +11,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'username', 'email', 'password', 'password2']
     def validate(self, attrs):
-        if attrs['password'] != attrs['password2']:
+        if attrs.get['password'] != attrs.get['password2']:
             raise serializers.ValidationError({"password": "ሁለቱም የይለፍ ቃሎች አይመሳሰሉም!"})
         return attrs
     def create(self, validated_data):
@@ -27,8 +27,10 @@ def validate_no_number(value):
         raise serializers.ValidationError("በደራሲው ስም ውስጥ ቁጥር ማስገባት አየቻልም!")
     return value
 def validate_no_special_chars(value):
-    if '#' in value or '@' in value:
-        raise serializers.ValidationError("በዚህ ቦታ ላይ '@' and '#' መጠቀም አይቻልም! ")
+    forbidden_chars = ['#', '@', '$', '%', '*']
+    for char in forbidden_chars:
+        if char in value:
+         raise serializers.ValidationError(f"በዚህ ቦታ ላይ '{char}' መጠቀም አይቻልም! ")
     return value
 class BookSerializer(serializers.ModelSerializer):
     owner = serializers.ReadOnlyField(source='owner.username')
