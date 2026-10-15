@@ -15,7 +15,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly , IsAuthenticat
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.filters import SearchFilter
+from rest_framework.filters import SearchFilter, OrderingFilter
 from .pagination import Day123Pagination
 
 User = get_user_model()
@@ -30,9 +30,10 @@ class BookListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
     pagination_class = Day123Pagination
 
-    filter_backends = [DjangoFilterBackend,SearchFilter]
+    filter_backends = [DjangoFilterBackend,SearchFilter,OrderingFilter]
     filterset_fields = ['category','owner__username']
-    search_fields = ['title','description']
+    search_fields = ['title','author','description']
+    ordering_fields = ['price','published_date','created_at']
 
     @extend_schema(
             summary="የመጽሃፍ ዝርዝር ",

@@ -153,10 +153,11 @@ REST_FRAMEWORK = {
         'user': '10/minute',
         
     },
-    'DEFAULT_FILTERING_BACKENDS':[
-        'django_filter.rest_framework.DjangoFilterBackend',
+    'DEFAULT_FILTER_BACKENDS':[
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.SearchFilter',
+        'rest_framework.filters.OrderingFilter',
     ],
-    
 }
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Book Management API',
