@@ -13,11 +13,10 @@ from drf_spectacular.types import OpenApiTypes
 from .permissions import IsOwnerOrStaffCanEditDelete
 from rest_framework.permissions import IsAuthenticatedOrReadOnly , IsAuthenticated
 from rest_framework.views import APIView
+from.pagination import BookPagination
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
-from .pagination import Day123Pagination
-
 User = get_user_model()
 
 class RegisterView(generics.CreateAPIView):
@@ -27,8 +26,8 @@ class RegisterView(generics.CreateAPIView):
 class BookListCreateView(generics.ListCreateAPIView):
     queryset = Book.objects.select_related('owner').all()
     serializer_class = BookSerializer
+    pagination_class = BookPagination
     permission_classes = [IsAuthenticatedOrReadOnly]
-    pagination_class = Day123Pagination
 
     filter_backends = [DjangoFilterBackend,SearchFilter,OrderingFilter]
     filterset_fields = ['category','owner__username']

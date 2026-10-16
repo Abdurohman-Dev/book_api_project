@@ -151,13 +151,14 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_RATES':{
         'anon': '3/minute',
         'user': '10/minute',
-        
     },
     'DEFAULT_FILTER_BACKENDS':[
         'django_filters.rest_framework.DjangoFilterBackend',
         'rest_framework.filters.SearchFilter',
         'rest_framework.filters.OrderingFilter',
     ],
+    'DEFAULT_PAGINATION_CLASS':'rest_framework.pagination.PageNumberPagination',
+        'PAGE_SIZE': 5,
 }
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Book Management API',
