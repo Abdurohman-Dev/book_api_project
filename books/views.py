@@ -27,8 +27,7 @@ class BookListCreateView(generics.ListCreateAPIView):
     queryset = Book.objects.select_related('owner').all()
     serializer_class = BookSerializer
     pagination_class = BookPagination
-    permission_classes = [IsOwnerOrReadOnly
-    ]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     throttle_scope = 'book_list_scope'
 
     filter_backends = [DjangoFilterBackend,SearchFilter,OrderingFilter]
