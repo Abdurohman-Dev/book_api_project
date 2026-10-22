@@ -11,7 +11,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'username', 'email', 'password', 'password2']
     def validate(self, attrs):
-        if attrs.get['password'] != attrs.get['password2']:
+        if attrs.get('password') != attrs.get('password2'):
             raise serializers.ValidationError({"password": "ሁለቱም የይለፍ ቃሎች አይመሳሰሉም!"})
         return attrs
     def create(self, validated_data):
