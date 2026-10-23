@@ -114,3 +114,77 @@ def test_update_book_owner():
 
     assert response.status_code == 200
     assert response.data['title'] == "Update Python Deep Work"
+
+@pytest.mark.django_db
+def test_permission_is_owner_or_read_only_for_anonymous_user():
+    user = User.objects.create_user(username="abdurohman", password="abdu1234")
+    book = Book.objects.create(
+        title="Python Deep Work",
+        description = "Django and DRF testing with Pytest tutorial.",
+        author= "Abdurohman Ali",
+        category= "Technology",
+        price = 600.00, 
+        owner = user
+    )
+    payload = {
+        "title": "Update Python Deep Work",
+        "author": "Abdurohman Ali",
+        "description": "Django and DRF testing with Pytest tutorial.",
+        "category": "Biography",
+        "price": 700.00,
+    }
+    client = APIClient()
+    url = reverse('book-list-create')
+    response = client.get(url)
+
+    assert response.status_code == 200
+    url = reverse('book-detail', args=[book.id])
+    response = client.put(url, payload, format="json")
+    assert response.status_code == 401
+    
+@pytest.mark.django_db
+def test_permission_is_owner_or_read_only_for_non_owner():
+    owner = User.objects.create_user(username="abdurohman", password="abdu1234")
+    other_user = User.objects.create_user(username="testuser", password="password123")
+    book = Book.objects.create(
+        title="Python Deep Work",
+        description = "Django and DRF testing with Pytest tutorial.",
+        author= "Abdurohman Ali",
+        category= "Technology",
+        price = 600.00, 
+        owner = owner
+    )
+    payload = {
+        "title": "Update Python Deep Work",
+        "author": "Abdurohman Ali",
+        "description": "Django and DRF testing with Pytest tutorial.",
+        "category": "Biography",
+        "price": 700.00,
+    }
+    client = APIClient()
+    client.force_authenticate(user = other_user)
+    url = reverse('book-detail', args=[book.id])
+    response = client.put(url,payload, format="json")
+    assert response.status_code == 403
+
+@pytest.mark.django_db
+def test_permission_delete_book_by_owner():
+    owner = User.objects.create_user(username="abdurohman", password="abdu1234")
+    other_user = User.objects.create_user(username="testuser", password="password123")
+    book = Book.objects.create(
+        title="Python Deep Work",
+        description = "Django and DRF testing with Pytest tutorial.",
+        author= "Abdurohman Ali",
+        category= "Technology",
+        price = 600.00, 
+        owner = owner
+    )
+    client = APIClient()
+    client.force_authenticate(user = other_user)
+    url = reverse('book-detail', args=[book.id])
+    response = client.delete(url)
+
+    assert response.status_code == 403
+    client.force_authenticate(user = owner)
+    response = client.delete(url)
+    assert response.status_code == 204
