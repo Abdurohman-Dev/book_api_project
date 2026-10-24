@@ -188,3 +188,76 @@ def test_permission_delete_book_by_owner():
     client.force_authenticate(user = owner)
     response = client.delete(url)
     assert response.status_code == 204
+@pytest.mark.django_db
+def test_search_books_by_title():
+    user = User.objects.create_user(username="abdurohman", password="abdu1234")
+    book1 = Book.objects.create(
+        title="Python Deep Work",
+        description = "Django and DRF testing with Pytest tutorial.",
+        author= "Abdurohman Ali",
+        category= "Technology",
+        price = 600.00, 
+        owner = user
+    )
+    book2 = Book.objects.create(
+        title="Django REST Framework",
+        description = "Django and DRF testing with Pytest tutorial.",
+        author= "Abdurohman Ali",
+        category= "Technology",
+        price = 600.00, 
+        owner = user
+    )
+    client = APIClient()
+    url = reverse('book-list-create',) + '?search=Python'
+    response = client.get(url)
+    assert response.status_code == 200
+    assert len(response.data['results']) == 1 
+@pytest.mark.django_db
+def test_books_pagination():
+    user = User.objects.create_user(username="abdurohman", password="abdu1234")
+    books = [
+        Book(
+            title=f"Django REST Framework {i}",
+            description = "Django and DRF testing with Pytest tutorial.",
+            author= "Abdurohman Ali",
+            category= "Technology",
+            price = 600.00, 
+            owner = user
+        )
+        for i in range(15)
+    ]
+    Book.objects.bulk_create(books)
+    client = APIClient()
+    url = reverse('book-list-create') + '?page_size=10'
+    response = client.get(url)
+
+    assert response.status_code == 200
+    assert response.data['count'] == 15
+    assert len(response.data['results']) == 10
+    assert response.data['next'] is not None
+@pytest.mark.django_db
+def test_books_ordering():
+    user = User.objects.create_user(username="abdurohman", password="abdu1234")
+    book1 = Book.objects.create(
+        title="Python Deep Work",
+        description = "Django and DRF testing with Pytest tutorial.",
+        author= "Abdurohman Ali",
+        category= "Technology",
+        price = 100.00, 
+        owner = user
+    )
+    book2 = Book.objects.create(
+        title="Django REST Framework",
+        description = "Django and DRF testing with Pytest tutorial.",
+        author= "Abdurohman Ali",
+        category= "Technology",
+        price = 600.00, 
+        owner = user
+    )
+    client = APIClient()
+    url = reverse('book-list-create') + '?ordering=-price'
+    response = client.get(url)
+    assert response.status_code == 200
+    assert len(response.data['results']) == 2
+    assert response.data['results'][0]['price'] == "600.00"
+    assert response.data['results'][1]['price'] == "100.00"
