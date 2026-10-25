@@ -50,9 +50,9 @@ class BookAPITestCase(APITestCase):
         """ተጠቃሚ Login አድርጎ መጽሐፍ መመዝገቡን መፈተሽ"""
         self.client.force_authenticate(user=self.user)
         data = {
-            'title': 'New Book',
+            'title': 'Django book',
             'author': 'Author Name',
-            'description': 'Description',
+            'description': 'Python Description',
             'category': 'Fiction',
             'price': '150.00',
             'published_date': '2026-08-21'

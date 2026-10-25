@@ -90,8 +90,8 @@ def test_create_book_unauthenticated():
     assert response.status_code == 401
 
 @pytest.mark.django_db
-def test_update_book_owner():
-    user = User.objects.create_user(username="abdurohman", password="abdu1234")
+def test_update_book_owner(authenticated_client):
+    client, user = authenticated_client
     book = Book.objects.create(
         title="Python Deep Work",
         description = "Django and DRF testing with Pytest tutorial.",
@@ -107,8 +107,6 @@ def test_update_book_owner():
         "category": "Biography",
         "price": 700.00,
     }
-    client = APIClient()
-    client.force_authenticate(user = user)
     url = reverse('book-detail', args=[book.id])
     response = client.put(url, payload , format="json")
 
@@ -168,9 +166,9 @@ def test_permission_is_owner_or_read_only_for_non_owner():
     assert response.status_code == 403
 
 @pytest.mark.django_db
-def test_permission_delete_book_by_owner():
-    owner = User.objects.create_user(username="abdurohman", password="abdu1234")
-    other_user = User.objects.create_user(username="testuser", password="password123")
+def test_permission_delete_book_by_owner(api_client, create_user):
+    owner = create_user(username="owner_user")
+    other_user = create_user(username="other_user")
     book = Book.objects.create(
         title="Python Deep Work",
         description = "Django and DRF testing with Pytest tutorial.",
@@ -179,14 +177,12 @@ def test_permission_delete_book_by_owner():
         price = 600.00, 
         owner = owner
     )
-    client = APIClient()
-    client.force_authenticate(user = other_user)
+    api_client.force_authenticate(user = other_user)
     url = reverse('book-detail', args=[book.id])
-    response = client.delete(url)
-
+    response = api_client.delete(url)
     assert response.status_code == 403
-    client.force_authenticate(user = owner)
-    response = client.delete(url)
+    api_client.force_authenticate(user = owner)
+    response = api_client.delete(url)
     assert response.status_code == 204
 @pytest.mark.django_db
 def test_search_books_by_title():
