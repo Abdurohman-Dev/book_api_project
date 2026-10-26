@@ -110,8 +110,8 @@ class ChangePasswordView(APIView):
 
     def put(self, request, *args, **kwargs):
         serializer = ChangePasswordSerializer(data=request.data, context={'request': request})
-        if serializer.is_valid():
-            user = request.user 
-            user.set_password(serializer.validated_data['new_password'])
-            user.save()
-            return Response({"message": "የይለፍ ቃልህ ብስኬት ተቀይሯል!"}, status=status.HTTP_200_OK)
+        serializer.is_valid(raise_exception=True)
+        user = request.user 
+        user.set_password(serializer.validated_data['new_password'])
+        user.save()
+        return Response({"message": "የይለፍ ቃልህ ብስኬት ተቀይሯል!"}, status=status.HTTP_200_OK)

@@ -30,3 +30,12 @@ def authenticated_client(api_client,create_user):
     user = create_user()
     api_client.force_authenticate(user = user)
     return api_client, user
+@pytest.fixture
+def valid_book_data():
+    return {
+        "title": "Python Deep Work",
+        "author": "Abdurohman Ali",
+        "description": "Django and DRF testing with Pytest tutorial.",
+        "category": "Technology",
+        "price": 399.00
+    }

@@ -9,14 +9,11 @@ User = get_user_model()
 class BookAPITestCase(APITestCase):
 
     def setUp(self):
-        # Test User መፍጠር
         self.user = User.objects.create_user(
             username='testuser', 
             email='test@gmail.com', 
             password='testpassword123'
         )
-        
-        # Test Book መፍጠር
         self.book = Book.objects.create(
             title='Test Book',
             author='Test Author',
@@ -26,10 +23,8 @@ class BookAPITestCase(APITestCase):
             published_date='2026-01-01',
             owner=self.user
         )
-
-        # URLs
-        self.login_url = reverse('token_obtain_pair')  # JWT Login URL
-        self.book_list_url = reverse('book-list-create')  # Adjust based on your urls.py name
+        self.login_url = reverse('token_obtain_pair')
+        self.book_list_url = reverse('book-list-create') 
 
     def test_user_login(self):
         """የተጠቃሚ Login ፈተና"""
@@ -47,7 +42,6 @@ class BookAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_create_book_authenticated(self):
-        """ተጠቃሚ Login አድርጎ መጽሐፍ መመዝገቡን መፈተሽ"""
         self.client.force_authenticate(user=self.user)
         data = {
             'title': 'Django book',
