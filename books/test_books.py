@@ -74,6 +74,27 @@ def test_admin_user_can_update_book(api_client, create_user):
     response = api_client.delete(url)
     assert response.status_code == 204
 @pytest.mark.django_db
+def test_is_owner_or_staff_has_permission_safe_method(api_client):
+    url = reverse('book-list-create')
+    response = api_client.get(url)
+    assert response.status_code == 200
+    assert len(response.data) > 0
+@pytest.mark.django_db
+def test_is_owner_or_staff_has_object_permission_safe_method(api_client, create_user):
+    user = create_user(username = "book-owner")
+    book = Book.objects.create(
+        title="Python Deep Work",
+        description = "Django and DRF testing with Pytest tutorial.",
+        author= "Abdurohman Ali",
+        category= "Technology",
+        price = 600.00, 
+        owner = user
+    )
+    url = reverse('book-detail', args=[book.id])
+    response = api_client.get(url)
+    assert response.status_code == 200
+    assert len(response.data) > 0
+@pytest.mark.django_db
 def test_book_str(create_user):
     user = create_user(username="book-owner")
     book = Book.objects.create(
@@ -102,6 +123,12 @@ def test_book_serializer_biography_price(valid_book_data):
     serializer = BookSerializer(data=data)
     assert not serializer.is_valid()
     assert "price" in serializer.errors
+def test_book_serializer_author_name_must_include_both_first_and_last_name(valid_book_data):
+    data = valid_book_data.copy()
+    data["author"] = "abdurohman"
+    serializer = BookSerializer(data = data)
+    assert not serializer.is_valid()
+    assert "author" in serializer.errors
 @pytest.mark.django_db
 def test_register_serialzer_password_mismatch():
     payload = {
@@ -113,7 +140,55 @@ def test_register_serialzer_password_mismatch():
     serializer = RegisterSerializer(data= payload)
     assert not serializer.is_valid()
     assert "password" in serializer.errors
-
+def test_book_serializer_author_with_number(valid_book_data):
+    data = valid_book_data.copy()
+    data['author'] = "abdu52354"
+    serializer = BookSerializer(data = data)
+    assert not serializer.is_valid()
+    assert "author" in serializer.errors
+def test_book_serializer_title_with_special_chars_raises_error(valid_book_data):
+    data = valid_book_data.copy()
+    data["title"] = "@Python Deep Work"
+    serializer = BookSerializer(data = data)
+    assert not serializer.is_valid()
+    assert "title" in serializer.errors
+def test_book_serializer_invalid_price_low_raises_error(valid_book_data):
+    data = valid_book_data.copy()
+    data["price"] = 45
+    serializer = BookSerializer(data = data)
+    assert not serializer.is_valid()
+    assert "price" in serializer.errors
+def test_book_serializer_invalid_price_high_raises_error(valid_book_data):
+    data = valid_book_data.copy()
+    data["price"] = "32432"
+    serializer = BookSerializer(data = data)
+    assert not serializer.is_valid()
+    assert "price" in serializer.errors
+def test_book_serializer_title_not_capitalized_raises_error(valid_book_data):
+    data = valid_book_data.copy()
+    data["title"] = "python deep work"
+    serializer = BookSerializer(data = data)
+    assert not serializer.is_valid()
+    assert "title" in serializer.errors
+def test_book_serializer_title_same_as_author_raises_error(valid_book_data):
+    data = valid_book_data.copy()
+    data["title"] = "Python deep"
+    data["author"] = "Python deep"
+    serializer = BookSerializer(data = data)
+    assert not serializer.is_valid()
+    assert "title" in serializer.errors
+def test_book_serializer_description_invalid_start_raises_error(valid_book_data):
+    data = valid_book_data.copy()
+    data['description'] = "This is a book about web development."
+    serializer = BookSerializer(data = data)
+    assert not serializer.is_valid()
+    assert "description" in serializer.errors
+def test_book_serializer_description_too_short_raises_error(valid_book_data):
+    data = valid_book_data.copy()
+    data["description"] = "Python work"
+    serializer = BookSerializer(data = data)
+    assert not serializer.is_valid()
+    assert "description" in serializer.errors
 @pytest.mark.django_db
 def test_get_book_list(api_client):
     url = reverse('book-list-create')
@@ -132,7 +207,6 @@ def test_create_book_authenticated(authenticated_client):
     }
     url = reverse('book-list-create')
     response = client.post(url,payload, format="json")
-
     assert response.status_code == 201
     assert response.data['title'] == "Python Deep Work"
 @pytest.mark.django_db
@@ -305,3 +379,24 @@ def test_books_ordering(api_client, create_user):
     assert len(response.data['results']) == 2
     assert response.data['results'][0]['price'] == "600.00"
     assert response.data['results'][1]['price'] == "100.00"
+@pytest.mark.django_db
+def test_profile_upload_view_success(authenticated_client):
+    client, user = authenticated_client
+    payload = {
+        "bio": "palmer10"
+    }
+    url = reverse('upload-profile-image')
+    response = client.post(url, payload, format='json')
+
+    assert response.status_code == 200
+    assert response.data['bio'] == "palmer10"
+@pytest.mark.django_db
+def test_profile_upload_view_invalid_data(authenticated_client):
+    client, user = authenticated_client
+    payload = {
+        "bio": "palmer10",
+        "image": "24323"
+    }
+    url = reverse('upload-profile-image')
+    response = client.post(url, payload, format='json')
+    assert response.status_code == 400

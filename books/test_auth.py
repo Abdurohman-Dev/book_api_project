@@ -3,7 +3,7 @@ from rest_framework.test import APIClient
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from .models import Book, UserProfile
-from .serializers import BookSerializer
+from .serializers import ChangePasswordSerializer
 
 User = get_user_model()
 
@@ -42,3 +42,13 @@ def test_change_password_success(authenticated_client):
 
     assert response.status_code == 200
     assert user.check_password("abdu4321")
+@pytest.mark.django_db
+def test_change_password_serializer_old_password_incorrect(create_user):
+    user = create_user(username="abdurohman", password="password123")
+    payload = {
+        "old_password": "wrongpassword",
+        "new_password": "abdu1234"
+    }
+    serializer = ChangePasswordSerializer(data=payload, context={'request':type('Request', (), {'user': user})()})
+    assert not serializer.is_valid()
+    assert "old_password" in serializer.errors

@@ -58,8 +58,6 @@ class BookSerializer(serializers.ModelSerializer):
     def validate_title(self, value):
         if not value[0].isupper():
             raise serializers.ValidationError("Title must start with a capital letter.")
-        if value.isdigit():
-            raise serializers.ValidationError("Title cannot contain only numbers.")
         return value
     def validate_description(self, value):
         lower_value = value.lower()

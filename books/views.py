@@ -10,7 +10,7 @@ from .serializers import (
 )
 from drf_spectacular.utils import extend_schema, OpenApiParameter,OpenApiExample
 from drf_spectacular.types import OpenApiTypes
-from .permissions import IsOwnerOrStaffCanEditDelete, IsOwnerOrReadOnly
+from .permissions import IsOwnerOrStaffCanEditDelete
 from rest_framework.permissions import IsAuthenticatedOrReadOnly , IsAuthenticated
 from rest_framework.views import APIView
 from.pagination import BookPagination
