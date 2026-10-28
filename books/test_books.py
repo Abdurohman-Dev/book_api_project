@@ -7,15 +7,10 @@ from .serializers import BookSerializer, RegisterSerializer
 
 User = get_user_model()
 @pytest.mark.django_db
-def test_non_owner_or_non_staff_user(api_client, create_user):
+def test_non_owner_or_non_staff_user(api_client, create_user, create_book):
     user = create_user(username="book-owner")
     other_user = create_user(username="other-user")
-    book = Book.objects.create(
-        title="Python Deep Work", 
-        author= "Abdurohman Ali",
-        price = 600.00, 
-        owner = user
-    )
+    book = create_book(owner= user)
     payload = {
         "title": "Update Python Deep Work",
         "author": "Abdurohman Ali",
@@ -28,15 +23,10 @@ def test_non_owner_or_non_staff_user(api_client, create_user):
     response = api_client.put(url, payload, format='json')
     assert response.status_code == 403
 @pytest.mark.django_db
-def test_staff_user_can_update_book(api_client, create_user):
+def test_staff_user_can_update_book(api_client, create_user, create_book):
     owner = create_user(username="book-owner")
     staff_user = create_user(username="staff-user", is_staff = True)
-    book = Book.objects.create(
-        title="Python Deep Work", 
-        author= "Abdurohman Ali",
-        price = 600.00, 
-        owner = owner
-    )
+    book = create_book(owner = owner)
     payload = {
         "title": "Update Python Deep Work",
         "author": "Abdurohman Ali",
@@ -50,15 +40,10 @@ def test_staff_user_can_update_book(api_client, create_user):
     assert response.status_code == 200
     assert response.data['title'] == "Update Python Deep Work"
 @pytest.mark.django_db
-def test_admin_user_can_update_book(api_client, create_user):
+def test_admin_user_can_update_book(api_client, create_user, create_book):
     owner = create_user(username="book-owner")
     admin_user = create_user(username="admin-user", is_superuser = True)
-    book = Book.objects.create(
-        title="Python Deep Work", 
-        author= "Abdurohman Ali",
-        price = 600.00, 
-        owner = owner
-    )
+    book = create_book(owner = owner)
     payload = {
         "title": "Update Python Deep Work",
         "author": "Abdurohman Ali",
@@ -80,29 +65,17 @@ def test_is_owner_or_staff_has_permission_safe_method(api_client):
     assert response.status_code == 200
     assert len(response.data) > 0
 @pytest.mark.django_db
-def test_is_owner_or_staff_has_object_permission_safe_method(api_client, create_user):
+def test_is_owner_or_staff_has_object_permission_safe_method(api_client, create_user, create_book):
     user = create_user(username = "book-owner")
-    book = Book.objects.create(
-        title="Python Deep Work",
-        description = "Django and DRF testing with Pytest tutorial.",
-        author= "Abdurohman Ali",
-        category= "Technology",
-        price = 600.00, 
-        owner = user
-    )
+    book = create_book(owner = user)
     url = reverse('book-detail', args=[book.id])
     response = api_client.get(url)
     assert response.status_code == 200
     assert len(response.data) > 0
 @pytest.mark.django_db
-def test_book_str(create_user):
+def test_book_str(create_user, create_book):
     user = create_user(username="book-owner")
-    book = Book.objects.create(
-        title="Python Deep Work", 
-        author= "Abdurohman Ali",
-        price = 600.00, 
-        owner = user
-    )
+    book = create_book(owner = user)
     assert str(book) == "Python Deep Work - Abdurohman Ali"
 @pytest.mark.django_db
 def test_user_profile_signal(create_user):
@@ -223,16 +196,9 @@ def test_create_book_unauthenticated(api_client):
 
     assert response.status_code == 401
 @pytest.mark.django_db
-def test_update_book_owner(authenticated_client):
+def test_update_book_owner(authenticated_client, create_book):
     client, user = authenticated_client
-    book = Book.objects.create(
-        title="Python Deep Work",
-        description = "Django and DRF testing with Pytest tutorial.",
-        author= "Abdurohman Ali",
-        category= "Technology",
-        price = 600.00, 
-        owner = user
-    )
+    book = create_book(owner = user)
     payload = {
         "title": "Update Python Deep Work",
         "author": "Abdurohman Ali",
@@ -247,39 +213,24 @@ def test_update_book_owner(authenticated_client):
     assert response.data['title'] == "Update Python Deep Work"
 
 @pytest.mark.django_db
-def test_permission_is_owner_or_read_only_for_anonymous_user(api_client, create_user):
+def test_permission_is_owner_or_read_only_for_anonymous_user(api_client, create_user, create_book):
     user = create_user(username="book_owner")
-    book = Book.objects.create(
-        title="Python Deep Work",
-        description = "Django and DRF testing with Pytest tutorial.",
-        author= "Abdurohman Ali",
-        category= "Technology",
-        price = 600.00, 
-        owner = user
-    )
+    book = create_book(owner = user)
     payload = {
         "title": "Update Python Deep Work",
         "price": 700.00,
     }
     url = reverse('book-list-create')
     response = api_client.get(url)
-
     assert response.status_code == 200
     url = reverse('book-detail', args=[book.id])
     response = api_client.put(url, payload, format="json")
     assert response.status_code == 401
 @pytest.mark.django_db
-def test_permission_is_owner_or_read_only_for_non_owner(api_client, create_user):
+def test_permission_is_owner_or_read_only_for_non_owner(api_client, create_user, create_book):
     owner = create_user(username="book-owner")
     other_user = create_user(username="other-user")
-    book = Book.objects.create(
-        title="Python Deep Work",
-        description = "Django and DRF testing with Pytest tutorial.",
-        author= "Abdurohman Ali",
-        category= "Technology",
-        price = 600.00, 
-        owner = owner
-    )
+    book = create_book(owner = owner)
     payload = {
         "title": "Update Python Deep Work",
         "author": "Abdurohman Ali",
@@ -292,17 +243,10 @@ def test_permission_is_owner_or_read_only_for_non_owner(api_client, create_user)
     response = api_client.put(url,payload, format="json")
     assert response.status_code == 403
 @pytest.mark.django_db
-def test_permission_delete_book_by_owner(api_client, create_user):
+def test_permission_delete_book_by_owner(api_client, create_user, create_book):
     owner = create_user(username="owner_user")
     other_user = create_user(username="other_user")
-    book = Book.objects.create(
-        title="Python Deep Work",
-        description = "Django and DRF testing with Pytest tutorial.",
-        author= "Abdurohman Ali",
-        category= "Technology",
-        price = 600.00, 
-        owner = owner
-    )
+    book = create_book(owner = owner)
     api_client.force_authenticate(user = other_user)
     url = reverse('book-detail', args=[book.id])
     response = api_client.delete(url)
@@ -311,40 +255,21 @@ def test_permission_delete_book_by_owner(api_client, create_user):
     response = api_client.delete(url)
     assert response.status_code == 204
 @pytest.mark.django_db
-def test_search_books_by_title(api_client, create_user):
+def test_search_books_by_title(api_client, create_user, create_book):
     user = create_user(username="book-owner")
-    book1 = Book.objects.create(
-        title="Python Deep Work",
-        description = "Django and DRF testing with Pytest tutorial.",
-        author= "Abdurohman Ali",
-        category= "Technology",
-        price = 600.00, 
-        owner = user
-    )
-    book2 = Book.objects.create(
-        title="Django REST Framework",
-        description = "Django and DRF testing with Pytest tutorial.",
-        author= "Abdurohman Ali",
-        category= "Technology",
-        price = 600.00, 
-        owner = user
-    )
+    book1 = create_book(owner = user)
+    book2 = create_book(title="Django REST Framework", owner = user)
     url = reverse('book-list-create',) + '?search=Python'
     response = api_client.get(url)
     assert response.status_code == 200
     assert len(response.data['results']) == 1 
 @pytest.mark.django_db
-def test_books_pagination(api_client, create_user):
+def test_books_pagination(api_client, create_user, valid_book_data):
     user = create_user(username="book-owner")
+    data = valid_book_data.copy()
+    data.pop('title', None)
     books = [
-        Book(
-            title=f"Django REST Framework {i}",
-            description = "Django and DRF testing with Pytest tutorial.",
-            author= "Abdurohman Ali",
-            category= "Technology",
-            price = 600.00, 
-            owner = user
-        )
+        Book(**data, title=f"Python Deep Work {i}", owner = user)
         for i in range(15)
     ]
     Book.objects.bulk_create(books)
@@ -355,24 +280,10 @@ def test_books_pagination(api_client, create_user):
     assert len(response.data['results']) == 10
     assert response.data['next'] is not None
 @pytest.mark.django_db
-def test_books_ordering(api_client, create_user):
+def test_books_ordering(api_client, create_user, create_book):
     user = create_user(username="book-owner")
-    book1 = Book.objects.create(
-        title="Python Deep Work",
-        description = "Django and DRF testing with Pytest tutorial.",
-        author= "Abdurohman Ali",
-        category= "Technology",
-        price = 100.00, 
-        owner = user
-    )
-    book2 = Book.objects.create(
-        title="Django REST Framework",
-        description = "Django and DRF testing with Pytest tutorial.",
-        author= "Abdurohman Ali",
-        category= "Technology",
-        price = 600.00, 
-        owner = user
-    )
+    book1 = create_book(price = 600, owner = user)
+    book2 = create_book(price = 100, owner = user)
     url = reverse('book-list-create') + '?ordering=-price'
     response = api_client.get(url)
     assert response.status_code == 200

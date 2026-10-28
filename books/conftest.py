@@ -2,6 +2,7 @@ import pytest
 from rest_framework.test import APIClient
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
+from books.models import Book
 User = get_user_model()
 
 @pytest.fixture(autouse=True)
@@ -39,3 +40,10 @@ def valid_book_data():
         "category": "Technology",
         "price": 399.00
     }
+@pytest.fixture
+def create_book(db, valid_book_data):
+    def make_book(**kwargs):
+        data = valid_book_data.copy()
+        data.update(kwargs)
+        return Book.objects.create(**data)
+    return make_book
