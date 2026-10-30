@@ -83,7 +83,7 @@ DATABASES = {
     'default': dj_database_url.config(
         default=os.environ.get(
             'DATABASE_URL',
-            'postgresql://abdurohman:sj84zp6ZQwps1wJNCW7a03ovsuEwBhjH@dpg-dbhjjg1srm7s73812ks0-a/book_db_v3f7'
+            'postgresql://abdurohman:sj84zp6ZQwps1wJNCW7a03ovsuEwBhjH@dpg-dbhjjg1srm7s73812ks0-a.frankfurt-postgres.render.com/book_db_v3f7'
         ),
         conn_max_age=600,
         conn_health_checks=True,

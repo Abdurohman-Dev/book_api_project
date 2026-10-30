@@ -80,6 +80,7 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user.profile
+@extend_schema(tags=['profile'])
 class ProfileUploadView(APIView):
     permission_classes = [IsAuthenticated]
     serializer_class = ProfileImageSerializer
@@ -104,6 +105,7 @@ class ProfileUploadView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+@extend_schema(tags=['profile'])
 class ChangePasswordView(APIView): 
     serializer_class = ChangePasswordSerializer
     permission_classes = [IsAuthenticated]
